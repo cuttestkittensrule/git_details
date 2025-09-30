@@ -47,7 +47,7 @@ public class GitVersionPlugin implements Plugin<Project> {
         extension.getPropertyFileName().convention(DEFAULT_PROPERTIES_FILE);
 
         // create task to generate properties file
-        var taskProvider = project.getTasks().register(GEN_PROPERTY_TASK_NAME, GenerateSources.class);
+        var taskProvider = project.getTasks().register(GEN_PROPERTY_TASK_NAME, GeneratePropertyFile.class);
         taskProvider.configure(task -> {
             task.getGitPropertyPackage().set(extension.getGitPropertyPackage());
             task.getPropertyFileName().set(extension.getPropertyFileName());
@@ -61,8 +61,8 @@ public class GitVersionPlugin implements Plugin<Project> {
         sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava().srcDir(generatedSourceSets);
     }
 
-    static abstract class GenerateSources extends DefaultTask {
-        public GenerateSources() {}
+    static abstract class GeneratePropertyFile extends DefaultTask {
+        public GeneratePropertyFile() {}
 
         @Input
         abstract Property<String> getGitPropertyPackage();
