@@ -9,6 +9,7 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 
@@ -63,7 +64,9 @@ public class GitVersionPlugin implements Plugin<Project> {
     static abstract class GenerateSources extends DefaultTask {
         public GenerateSources() {}
 
+        @Input
         abstract Property<String> getGitPropertyPackage();
+        @Input
         abstract Property<String> getPropertyFileName();
 
         @TaskAction
