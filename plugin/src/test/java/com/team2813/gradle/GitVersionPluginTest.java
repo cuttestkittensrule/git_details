@@ -9,15 +9,18 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * A simple unit test for the 'com.team2813.git_version.greeting' plugin.
+ * A simple unit test for the 'com.team2813.gradle.git_version' plugin.
  */
 class GitVersionPluginTest {
-    @Test void pluginRegistersATask() {
+    @Test
+    void pluginRegistersATask() {
         // Create a test project and apply the plugin
-//        Project project = ProjectBuilder.builder().build();
-//        project.getPlugins().apply("com.team2813.git_version.greeting");
+        Project project = ProjectBuilder.builder().build();
+        var container = project.getPlugins();
+        container.apply("java");
+        container.apply("com.team2813.gradle.git_version");
 
         // Verify the result
-//        assertNotNull(project.getTasks().findByName("greeting"));
+        assertNotNull(project.getTasks().findByName(GitVersionPlugin.GEN_PROPERTY_TASK_NAME));
     }
 }

@@ -20,7 +20,7 @@ public class GitVersionPlugin implements Plugin<Project> {
     private static final String GEN_DIR = "generated/sources/" + EXTENSION_NAME;
     private static final String PROPERTY_PACKAGE = "properties";
     private static final String DEFAULT_PROPERTIES_FILE = "git-info.properties";
-    private static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
+    static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
 
     interface GitVersionExtension {
         Property<String> getGitPropertyPackage();
