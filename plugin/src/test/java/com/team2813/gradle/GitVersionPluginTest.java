@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class GitVersionPluginTest {
     @Test
-    void pluginRegistersATask() {
+    void pluginRegistersPropertyGenerationTask() {
         // Create a test project and apply the plugin
         Project project = ProjectBuilder.builder().build();
         var container = project.getPlugins();

@@ -7,9 +7,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.FileWriter;
+import java.nio.file.Path;
 
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.BuildResult;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,10 +32,11 @@ class GitVersionPluginFunctionalTest {
     }
 
     private File getPropertyFile() {
-        return new File(projectDir, "/generated/sources/git_version/git-info.properties");
+        return new File(projectDir, Path.of("generated", "sources", "git_version", "properties", "git-info.properties").toString());
     }
 
-    @Test void canRunTask() throws IOException {
+    @Test
+    void canRunTask() throws IOException, InterruptedException {
         writeString(getSettingsFile(), "");
         writeString(getBuildFile(),
                 """
@@ -43,7 +46,27 @@ class GitVersionPluginFunctionalTest {
                         }
                     """
         );
-        // TODO: Make the temporary file live in a git repository, so it won't fail due to a non-existent git repo
+
+        try {
+            // init git repository in the temporary directory
+            new ProcessBuilder()
+                    .directory(projectDir)
+                    .command("git", "init")
+                    .start().waitFor();
+            // add the build.gradle and the settings.gradle files
+            new ProcessBuilder()
+                    .directory(projectDir)
+                    .command("git", "add", "-A")
+                    .start().waitFor();
+            // commit those files (without signatures since we don't need them)
+            new ProcessBuilder()
+                    .directory(projectDir)
+                    .command("git", "commit", "--no-gpg-sign", "-m", "initial commit")
+                    .start().waitFor();
+        } catch (IOException e) {
+            // if we had an IOException, we couldn't find git, or it fails. Either way, abort the test
+            Assumptions.abort("Could not execute git commands, so the temporary folder won't be a valid git repository, which would wrongly fail the test!");
+        }
 
         // Run the build
         GradleRunner runner = GradleRunner.create();

@@ -13,11 +13,15 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 // TODO: Force load of java plugin before this plugin, or fail neatly if java plugin is not loaded (if possible)
 public class GitVersionPlugin implements Plugin<Project> {
     private static final String EXTENSION_NAME = "git_version";
     private static final String BINARY_NAME = "git_details";
-    private static final String GEN_DIR = "generated/sources/" + EXTENSION_NAME;
+    private static final Path GEN_DIR = Path.of("generated","sources", EXTENSION_NAME);
     private static final String PROPERTY_PACKAGE = "properties";
     private static final String DEFAULT_PROPERTIES_FILE = "git-info.properties";
     static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
@@ -54,12 +58,11 @@ public class GitVersionPlugin implements Plugin<Project> {
             task.getPropertyFileName().set(extension.getPropertyFileName());
         });
         // which should be depended on by the java compilation task
-        // TODO: Maybe use a better task to be depended on by
-        project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME).dependsOn(taskProvider);
+        project.getTasks().getByName(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).dependsOn(taskProvider);
 
         // add generated source set to the main source set.
         var sourceSets = project.getExtensions().getByType(JavaPluginExtension.class).getSourceSets();
-        var generatedSourceSets = project.getLayout().getBuildDirectory().dir(GEN_DIR);
+        var generatedSourceSets = project.getLayout().getBuildDirectory().dir(GEN_DIR.toString());
         sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources().srcDir(generatedSourceSets);
     }
 
@@ -74,13 +77,15 @@ public class GitVersionPlugin implements Plugin<Project> {
         @TaskAction
         void createGitProperties() {
             Project project = getProject();
-            String repoPath = project.getRootDir().getAbsolutePath();
+            Path repoPath = project.getRootDir().toPath();
             String gitPropertyPackage = getGitPropertyPackage().get();
             String propertyFileName = getPropertyFileName().get();
-            String relPropertyPath = GEN_DIR + "/" + gitPropertyPackage.replace('.', '/') + propertyFileName;
-
-            String propertyPath = project.absoluteProjectPath(relPropertyPath);
-            int error = generateGitProperties(repoPath, propertyPath);
+            List<String> dirs = new ArrayList<>(List.of(gitPropertyPackage.split("\\.")));
+            String first = dirs.remove(0);
+            dirs.add(propertyFileName);
+            Path relPropertyPath = GEN_DIR.resolve(Path.of(first, dirs.toArray(String[]::new)));
+            Path propertyPath = repoPath.resolve(relPropertyPath);
+            int error = generateGitProperties(repoPath.toString(), propertyPath.toString());
             if (error != 0) {
                 switch (error) {
                     case 0b0001_0001:
