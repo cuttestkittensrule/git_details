@@ -58,7 +58,7 @@ public class GitVersionPlugin implements Plugin<Project> {
         // add generated source set to the main source set.
         var sourceSets = project.getExtensions().getByType(JavaPluginExtension.class).getSourceSets();
         var generatedSourceSets = project.getLayout().getBuildDirectory().dir(GEN_DIR);
-        sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getJava().srcDir(generatedSourceSets);
+        sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources().srcDir(generatedSourceSets);
     }
 
     static abstract class GeneratePropertyFile extends DefaultTask {
@@ -75,7 +75,7 @@ public class GitVersionPlugin implements Plugin<Project> {
             String repoPath = project.getPath();
             String gitPropertyPackage = getGitPropertyPackage().get();
             String propertyFileName = getPropertyFileName().get();
-            String relPropertyPath = GEN_DIR + "/" + gitPropertyPackage.replace('.', '/') + "/resources/" + propertyFileName;
+            String relPropertyPath = GEN_DIR + "/" + gitPropertyPackage.replace('.', '/') + propertyFileName;
 
             String propertyPath = project.absoluteProjectPath(relPropertyPath);
             int error = generateGitProperties(repoPath, propertyPath);
