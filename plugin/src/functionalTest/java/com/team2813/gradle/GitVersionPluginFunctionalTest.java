@@ -29,23 +29,32 @@ class GitVersionPluginFunctionalTest {
         return new File(projectDir, "settings.gradle");
     }
 
+    private File getPropertyFile() {
+        return new File(projectDir, "/generated/sources/git_version/git-info.properties");
+    }
+
     @Test void canRunTask() throws IOException {
         writeString(getSettingsFile(), "");
         writeString(getBuildFile(),
-            "plugins {" +
-            "  id('com.team2813.git_version.greeting')" +
-            "}");
+                """
+                        plugins {
+                          id('java')
+                          id('com.team2813.gradle.git_version')
+                        }
+                    """
+        );
+        // TODO: Make the temporary file live in a git repository, so it won't fail due to a non-existent git repo
 
         // Run the build
         GradleRunner runner = GradleRunner.create();
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("greeting");
+        runner.withArguments("createGitProperties");
         runner.withProjectDir(projectDir);
         BuildResult result = runner.build();
 
         // Verify the result
-        assertTrue(result.getOutput().contains("Hello from plugin 'com.team2813.git_version.greeting'"));
+        assertTrue(getPropertyFile().exists());
     }
 
     private void writeString(File file, String string) throws IOException {

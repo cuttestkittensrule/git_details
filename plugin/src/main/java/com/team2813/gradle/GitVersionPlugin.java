@@ -13,9 +13,10 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 
+// TODO: Force load of java plugin before this plugin, or fail neatly if java plugin is not loaded (if possible)
 public class GitVersionPlugin implements Plugin<Project> {
     private static final String EXTENSION_NAME = "git_version";
-    private static final String BINARY_NAME = "git_version";
+    private static final String BINARY_NAME = "git_details";
     private static final String GEN_DIR = "generated/sources/" + EXTENSION_NAME;
     private static final String PROPERTY_PACKAGE = "properties";
     private static final String DEFAULT_PROPERTIES_FILE = "git-info.properties";
@@ -53,6 +54,7 @@ public class GitVersionPlugin implements Plugin<Project> {
             task.getPropertyFileName().set(extension.getPropertyFileName());
         });
         // which should be depended on by the java compilation task
+        // TODO: Maybe use a better task to be depended on by
         project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME).dependsOn(taskProvider);
 
         // add generated source set to the main source set.
@@ -72,7 +74,7 @@ public class GitVersionPlugin implements Plugin<Project> {
         @TaskAction
         void createGitProperties() {
             Project project = getProject();
-            String repoPath = project.getPath();
+            String repoPath = project.getRootDir().getAbsolutePath();
             String gitPropertyPackage = getGitPropertyPackage().get();
             String propertyFileName = getPropertyFileName().get();
             String relPropertyPath = GEN_DIR + "/" + gitPropertyPackage.replace('.', '/') + propertyFileName;
