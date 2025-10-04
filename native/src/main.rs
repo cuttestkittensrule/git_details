@@ -1,6 +1,4 @@
-#[cfg(feature = "jni")]
-mod jni;
-
+use std::env;
 use std::fs;
 use std::io::Write;
 use std::{fs::File, path::Path};
@@ -83,4 +81,22 @@ impl Results {
         }
         Ok(())
     }
+}
+
+fn main() -> Result<()> {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 3 {
+        eprintln!("Usage: {} <git_repo_path> <output_file_path>", args[0]);
+        return Err("Invalid number of arguments provided.".into());
+    }
+    let repo_path = &args[1];
+    let output_file_path = &args[2];
+
+    let results = Results::new(repo_path)
+        .ok_or_else(|| {
+            let msg = format!("Could not initialize Git details. Path '{}' is not a valid Git repository.", repo_path);
+            Box::from(msg) as Box<dyn std::error::Error>
+        })?;
+    results.create_java_properties(output_file_path)?;
+    Ok(())
 }

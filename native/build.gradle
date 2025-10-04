@@ -1,38 +1,81 @@
 plugins {
-    id 'fr.stardustenterprises.rust.wrapper'
+    id "io.github.arc-blroth.cargo-wrapper" version "1.1.0"
 }
 
-rust {
-    release.set(true)
+def SUPPORTED_TARGETS = [
+        "i686-unknown-linux-gnu", // 32-bit Intel architecture running standard Linux (GNU libc)
+        "x86_64-unknown-linux-gnu", // 64-bit Intel architecture running standard Linux (GNU libc)
+        "x86_64-pc-windows-gnu", // 64-bit Intel architecture running Windows (GNU libc)
+        "x86_64-apple-darwin", // 64-bit Intel architecture running macOS
+        "aarch64-apple-darwin", // 64-bit ARM architecture (Apple Silicon) running macOS
+]
 
-    command.set("cargo")
+// Note: The crate name must match your Cargo.toml package name ("git_details")
+def BINARY_CRATE_NAME = "git_details"
 
-    cargoInstallTargets.set(false)
+/**
+ * Checks if a specific Rust target is installed via `rustup target list --installed`.
+ * @param target The full rustup target string (e.g., "x86_64-apple-darwin").
+ * @return true if the target is installed, false otherwise.
+ */
+boolean isRustTargetInstalled(String target) {
+    def output = new ByteArrayOutputStream()
 
-    targets {
-        register("linux-i686") {
-            target = "i686-unknown-linux-gnu"
-            outputName = "libgit_version.so"
+    try {
+        def result = exec {
+            commandLine 'rustup', 'target', 'list', '--installed'
+            standardOutput = output
+            ignoreExitValue true
         }
 
-        register("linux-x86_64") {
-            target = "x86_64-unknown-linux-gnu"
-            outputName = "libgit_version.so"
+        if (result.exitValue != 0) {
+            logger.warn("Could not check rustup targets (exit code ${result.exitValue}). Assuming no targets are installed.")
+            return false
         }
 
-        register("win-x86_64") {
-            target = "x86_64-pc-windows-gnu"
-            outputName = "git_version.dll"
-        }
+        def installedTargets = output.toString()
 
-//        register("macos-x86_64") {
-//            target = "x86_64-apple-darwin"
-//            outputName = "libgit_version.dylib"
-//        }
-//
-//        register("macos-aarch64") {
-//            target = "aarch64-apple-darwin"
-//            outputName = "libgit_version.dylib"
-//        }
+        // Check for target surrounded by newlines, or at the start of the output
+        return installedTargets.contains("\n${target}\n") || installedTargets.startsWith("${target}\n")
+
+    } catch (Exception e) {
+        logger.warn("Could not execute 'rustup' command. Assuming no targets are installed. Error: ${e.getMessage()}")
+        return false
+    }
+}
+
+cargo {
+    crate = projectDir.path
+    profile = 'release'
+
+    // Only include the host binary (key: "") in the 'outputs' map.
+    // This satisfies the plugin's requirement for a single primary artifact.
+    outputs = [
+            "": BINARY_CRATE_NAME
+    ]
+}
+
+// This new task handles the building of all cross-compile targets separately.
+tasks.register('crossCompileRust') {
+    group = 'build'
+    description = 'Builds all supported cross-compilation targets if their toolchains are installed.'
+
+    // Ensure this task depends on the main host build task so Cargo.lock is generated first
+    dependsOn tasks.named('cargoBuildRelease')
+
+    doLast {
+        SUPPORTED_TARGETS.each { target ->
+            if (isRustTargetInstalled(target)) {
+                logger.lifecycle("Executing cross-compile for target: ${target}")
+
+                exec {
+                    // We must execute cargo from the directory containing Cargo.toml
+                    workingDir project.file('.')
+                    commandLine 'cargo', 'build', '--release', '--target', target
+                }
+            } else {
+                logger.lifecycle("Rust target not installed, skipping: ${target}")
+            }
+        }
     }
 }
