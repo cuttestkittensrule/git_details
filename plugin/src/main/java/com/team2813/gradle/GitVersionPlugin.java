@@ -22,14 +22,12 @@ import java.util.List;
 public class GitVersionPlugin implements Plugin<Project> {
     private static final String EXTENSION_NAME = "git_version";
     private static final String BINARY_NAME = "git_details";
-    private static final Path GEN_DIR = Path.of("generated","sources", EXTENSION_NAME);
-    private static final String PROPERTY_PACKAGE = "properties";
-    private static final String DEFAULT_PROPERTIES_FILE = "git-info.properties";
+    private static final Path GEN_DIR = Path.of("generated","resources", EXTENSION_NAME);
+    private static final String DEFAULT_PROPERTIES_PATH = "git-info.properties";
     static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
 
     interface GitVersionExtension {
-        Property<String> getGitPropertyPackage();
-        Property<String> getPropertyFileName();
+        Property<String> getResourceFilePath();
     }
 
     static {
@@ -56,14 +54,12 @@ public class GitVersionPlugin implements Plugin<Project> {
     public void apply(Project project) {
         // allow configuration w/defaults
         var extension = project.getExtensions().create(EXTENSION_NAME, GitVersionExtension.class);
-        extension.getGitPropertyPackage().convention(PROPERTY_PACKAGE);
-        extension.getPropertyFileName().convention(DEFAULT_PROPERTIES_FILE);
+        extension.getResourceFilePath().convention(DEFAULT_PROPERTIES_PATH);
 
         // create task to generate properties file
         var taskProvider = project.getTasks().register(GEN_PROPERTY_TASK_NAME, GeneratePropertyFile.class);
         taskProvider.configure(task -> {
-            task.getGitPropertyPackage().set(extension.getGitPropertyPackage());
-            task.getPropertyFileName().set(extension.getPropertyFileName());
+            task.getResourceFilePath().set(extension.getResourceFilePath());
         });
         // which should be depended on by the java compilation task
         project.getTasks().getByName(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).dependsOn(taskProvider);
@@ -78,19 +74,15 @@ public class GitVersionPlugin implements Plugin<Project> {
         public GeneratePropertyFile() {}
 
         @Input
-        abstract Property<String> getGitPropertyPackage();
-        @Input
-        abstract Property<String> getPropertyFileName();
+        abstract Property<String> getResourceFilePath();
 
         @TaskAction
         void createGitProperties() {
             Project project = getProject();
             Path repoPath = project.getRootDir().toPath();
-            String gitPropertyPackage = getGitPropertyPackage().get();
-            String propertyFileName = getPropertyFileName().get();
-            List<String> dirs = new ArrayList<>(List.of(gitPropertyPackage.split("\\.")));
+            String resourceFilePath = getResourceFilePath().get();
+            List<String> dirs = new ArrayList<>(List.of(resourceFilePath.split("/")));
             String first = dirs.remove(0);
-            dirs.add(propertyFileName);
             Path relPropertyPath = GEN_DIR.resolve(Path.of(first, dirs.toArray(String[]::new)));
             Path propertyPath = repoPath.resolve(relPropertyPath);
             int error = generateGitProperties(repoPath.toString(), propertyPath.toString());

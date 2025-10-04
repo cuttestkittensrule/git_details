@@ -14,6 +14,9 @@ import org.gradle.testkit.runner.BuildResult;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -23,66 +26,59 @@ class GitVersionPluginFunctionalTest {
     @TempDir
     File projectDir;
 
-    private File getBuildFile() {
-        return new File(projectDir, "build.gradle");
-    }
-
-    private File getSettingsFile() {
-        return new File(projectDir, "settings.gradle");
-    }
-
-    private File getPropertyFile() {
-        return new File(projectDir, Path.of("generated", "sources", "git_version", "properties", "git-info.properties").toString());
-    }
-
     @Test
-    void canRunTask() throws IOException, InterruptedException {
-        writeString(getSettingsFile(), "");
-        writeString(getBuildFile(),
-                """
-                        plugins {
-                          id('java')
-                          id('com.team2813.gradle.git_version')
-                        }
-                    """
-        );
+    void propertyFileCreated() throws Exception {
+        // Prepare
+        FileLocations locations = new TestProjectBuilder(projectDir).build();
 
-        try {
-            // init git repository in the temporary directory
-            new ProcessBuilder()
-                    .directory(projectDir)
-                    .command("git", "init")
-                    .start().waitFor();
-            // add the build.gradle and the settings.gradle files
-            new ProcessBuilder()
-                    .directory(projectDir)
-                    .command("git", "add", "-A")
-                    .start().waitFor();
-            // commit those files (without signatures since we don't need them)
-            new ProcessBuilder()
-                    .directory(projectDir)
-                    .command("git", "commit", "--no-gpg-sign", "-m", "initial commit")
-                    .start().waitFor();
-        } catch (IOException e) {
-            // if we had an IOException, we couldn't find git, or it fails. Either way, abort the test
-            Assumptions.abort("Could not execute git commands, so the temporary folder won't be a valid git repository, which would wrongly fail the test!");
-        }
-
-        // Run the build
+        // Act (run createGitProperties)
         GradleRunner runner = GradleRunner.create();
         runner.forwardOutput();
         runner.withPluginClasspath();
         runner.withArguments("createGitProperties");
         runner.withProjectDir(projectDir);
-        BuildResult result = runner.build();
+        runner.build();
 
-        // Verify the result
-        assertTrue(getPropertyFile().exists());
+        // Assert
+        assertTrue(locations.expectedPropertyFile().exists(), "Properties file does not exist!");
     }
 
-    private void writeString(File file, String string) throws IOException {
-        try (Writer writer = new FileWriter(file)) {
-            writer.write(string);
-        }
+    @ParameterizedTest
+    @ValueSource(strings = {"build.properties", "BUILD/git-info.properties", "Build/git.properties"})
+    void nonDefaultPropertyLocation(String propertyLocation) throws Exception {
+        // Prepare
+        FileLocations locations = new TestProjectBuilder(projectDir)
+                .propertyPath(propertyLocation)
+                .build();
+
+        // Act (run createGitProperties)
+        GradleRunner runner = GradleRunner.create();
+        runner.forwardOutput();
+        runner.withPluginClasspath();
+        runner.withArguments("createGitProperties");
+        runner.withProjectDir(projectDir);
+        runner.build();
+
+        // Assert
+        assertTrue(locations.expectedPropertyFile().exists(), "Properties file does not exist!");
+    }
+
+    @Test
+    void noGitRepository() throws Exception {
+        // Prepare
+        FileLocations locations = new TestProjectBuilder(projectDir)
+                .withoutGitRepo()
+                .build();
+
+        // Act (run createGitProperties)
+        GradleRunner runner = GradleRunner.create();
+        runner.withPluginClasspath();
+        runner.withArguments("createGitProperties");
+        runner.withProjectDir(projectDir);
+        BuildResult result = runner.buildAndFail();
+
+        // Assert
+        assertFalse(locations.expectedPropertyFile().exists(), "Properties file should not be created on failure!");
+        assertTrue(result.getOutput().contains("A fundamental assumption of git state was broken!"), "Should have the exception message in output!");
     }
 }
