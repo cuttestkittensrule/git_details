@@ -9,6 +9,8 @@ plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
     id 'java-gradle-plugin'
     id 'idea'
+    id 'fr.stardustenterprises.rust.importer'
+    id "com.github.johnrengelman.shadow" version "5.0.0"
 }
 
 // Download the source code for dependencies and the javadoc (in IntelliJ IDEA).
@@ -30,6 +32,18 @@ dependencies {
     testImplementation libs.junit.jupiter
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation "fr.stardustenterprises:yanl:0.7.4"
+    rust(project(":native"))
+}
+
+rustImport {
+    baseDir.set("/META-INF/natives")
+    layout.set("hierarchical")
+}
+
+tasks.shadowJar {
+    archiveClassifier.set("")
 }
 
 gradlePlugin {

@@ -1,0 +1,38 @@
+plugins {
+    id 'fr.stardustenterprises.rust.wrapper'
+}
+
+rust {
+    release.set(true)
+
+    command.set("cargo")
+
+    cargoInstallTargets.set(false)
+
+    targets {
+        register("linux-i686") {
+            target = "i686-unknown-linux-gnu"
+            outputName = "libgit_version.so"
+        }
+
+        register("linux-x86_64") {
+            target = "x86_64-unknown-linux-gnu"
+            outputName = "libgit_version.so"
+        }
+
+        register("win-x86_64") {
+            target = "x86_64-pc-windows-gnu"
+            outputName = "git_version.dll"
+        }
+
+//        register("macos-x86_64") {
+//            target = "x86_64-apple-darwin"
+//            outputName = "libgit_version.dylib"
+//        }
+//
+//        register("macos-aarch64") {
+//            target = "aarch64-apple-darwin"
+//            outputName = "libgit_version.dylib"
+//        }
+    }
+}

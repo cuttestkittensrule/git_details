@@ -3,6 +3,7 @@
  */
 package com.team2813.gradle;
 
+import fr.stardustenterprises.yanl.NativeLayout;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -16,6 +17,8 @@ import org.gradle.api.tasks.TaskAction;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import fr.stardustenterprises.yanl.NativeLoader;
 
 // TODO: Force load of java plugin before this plugin, or fail neatly if java plugin is not loaded (if possible)
 public class GitVersionPlugin implements Plugin<Project> {
@@ -32,7 +35,18 @@ public class GitVersionPlugin implements Plugin<Project> {
     }
 
     static {
-        System.loadLibrary(BINARY_NAME);
+        NativeLoader loader = new NativeLoader.Builder().build();
+        var url = NativeLayout.class.getResource("/META-INF/natives/linux/x86_64/libgit_version.so");
+        if (url == null) {
+            System.err.println("Null url was returned!");
+        }
+        try {
+            loader.loadLibrary(BINARY_NAME, false);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            throw new RuntimeException("Failed to load library", e);
+        }
+
     }
 
     /**

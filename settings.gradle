@@ -7,3 +7,4 @@
 
 rootProject.name = 'git-version'
 include('plugin')
+include('native')

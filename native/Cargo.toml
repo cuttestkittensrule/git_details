@@ -1,0 +1,16 @@
+[package]
+name = "git_details"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+git2 = { version="0.20", default-features=false }
+chrono = "0.4"
+jni = { version="0.21", optional=true }
+
+[features]
+default = [ "jni" ]
+jni = ["dep:jni"]
