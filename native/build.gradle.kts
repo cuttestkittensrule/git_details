@@ -10,6 +10,8 @@ rust {
     cargoInstallTargets.set(false)
 
     targets {
+        this += defaultTarget()
+
         register("linux-i686") {
             target = "i686-unknown-linux-gnu"
             outputName = "libgit_details.so"
