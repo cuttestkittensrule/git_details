@@ -44,7 +44,7 @@ public class TestProjectBuilder {
     private static final String pluginStr = """
             plugins {
               id('java')
-              id('com.team2813.gradle.git_version')
+              id('com.team2813.gradle.git_details')
             }
             
             """;

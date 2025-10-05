@@ -5,6 +5,6 @@
  * For more detailed information on multi-project builds, please refer to https://docs.gradle.org/9.1.0/userguide/multi_project_builds.html in the Gradle documentation.
  */
 
-rootProject.name = 'git-version'
+rootProject.name = 'git_details'
 include('plugin')
 include('native')

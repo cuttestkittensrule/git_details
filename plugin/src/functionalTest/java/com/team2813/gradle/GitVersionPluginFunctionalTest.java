@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * A simple functional test for the 'com.team2813.git_version.greeting' plugin.
+ * A simple functional test for the 'com.team2813.git_details.greeting' plugin.
  */
 class GitVersionPluginFunctionalTest {
     @TempDir

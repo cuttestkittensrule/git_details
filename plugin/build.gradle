@@ -50,7 +50,7 @@ gradlePlugin {
     // Define the plugin
     plugins {
         create("gitVersion") {
-            id = 'com.team2813.gradle.git_version'
+            id = 'com.team2813.gradle.git_details'
             implementationClass = 'com.team2813.gradle.GitVersionPlugin'
         }
     }
