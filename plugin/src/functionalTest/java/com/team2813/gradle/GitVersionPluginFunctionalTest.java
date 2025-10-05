@@ -4,14 +4,9 @@
 package com.team2813.gradle;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.FileWriter;
-import java.nio.file.Path;
 
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.BuildResult;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,7 +22,7 @@ class GitVersionPluginFunctionalTest {
     File projectDir;
 
     @Test
-    void propertyFileCreated() throws Exception {
+    void defaultPropertyFileCreated() throws Exception {
         // Prepare
         FileLocations locations = new TestProjectBuilder(projectDir).build();
 
@@ -45,7 +40,7 @@ class GitVersionPluginFunctionalTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"build.properties", "BUILD/git-info.properties", "Build/git.properties"})
-    void nonDefaultPropertyLocation(String propertyLocation) throws Exception {
+    void nonDefaultPropertyFileCreated(String propertyLocation) throws Exception {
         // Prepare
         FileLocations locations = new TestProjectBuilder(projectDir)
                 .propertyPath(propertyLocation)
