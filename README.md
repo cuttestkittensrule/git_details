@@ -65,4 +65,5 @@ These methods are not preferred, as they do not perform integrity checks.
 ## Building
 
 In order to build the plugin, you just need to invoke the gradle `build` task.
-On windows, this would be `.\gradlew.bat build` in the terminal, and it would be `./gradlew build` on other operating systems.
+On windows, this would be `.\gradlew.bat build` in the terminal.
+On other operating systems, it would be `./gradlew build`.
