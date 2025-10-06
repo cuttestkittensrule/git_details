@@ -66,7 +66,7 @@ public class GitVersionPlugin implements Plugin<Project> {
 
         // add generated source set to the main source set.
         var sourceSets = project.getExtensions().getByType(JavaPluginExtension.class).getSourceSets();
-        var generatedSourceSets = project.getLayout().getBuildDirectory().dir(GEN_DIR.toString());
+        var generatedSourceSets = project.getLayout().getBuildDirectory().dir(GEN_DIR);
         sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources().srcDir(generatedSourceSets);
     }
 
