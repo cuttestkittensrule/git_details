@@ -12,8 +12,7 @@ import java.util.Properties;
 class Simple {
     public static void main(String[] args) throws Exception {
         Properties prop = new Properties();
-        var loader = Thread.currentThread().getContextClassLoader();
-        try (InputStream is = loader.getResourceAsStream("/git-info.properties")) {
+        try (InputStream is = Simple.class.getResourceAsStream("/git-info.properties")) {
             prop.load(is);
         }
         String sha = Objects.requireNonNull(prop.getProperty("git_sha"), "git_sha does not exist in properties!");
@@ -21,11 +20,11 @@ class Simple {
             throw new RuntimeException("git_sha is blank!");
         }
         String changes = Objects.requireNonNull(prop.getProperty("has_uncommited_changes"), "has_uncommited_changes does not exist in properties!");
-        if (!changes.equals("True") && changes.equals("False")) {
+        if (!changes.equals("true") && !changes.equals("false")) {
             throw new RuntimeException(String.format("Expected valid boolean for has_uncommited_changes, but was \"%s\"", changes));
         }
-        boolean bothTrue = changes.equals("True") && Boolean.parseBoolean(changes);
-        boolean bothFalse = changes.equals("False") && !Boolean.parseBoolean(changes);
+        boolean bothTrue = changes.equals("true") && Boolean.parseBoolean(changes);
+        boolean bothFalse = changes.equals("false") && !Boolean.parseBoolean(changes);
         if (!bothTrue && !bothFalse) {
             throw new RuntimeException("\"True\" and \"False\" did not parse as proper booleans");
         }
