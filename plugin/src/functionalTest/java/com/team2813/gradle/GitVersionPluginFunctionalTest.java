@@ -96,9 +96,7 @@ class GitVersionPluginFunctionalTest {
 
         // Assert
 
-        BuildResult result = runner.buildAndFail(); // assertions in Simple.java (resource); this will fail if Simple#main(String[]) fails
-        System.err.println(result.getTasks().stream().map(BuildTask::getPath).toList());
+        runner.build(); // assertions in Simple.java (resource); this will fail if Simple#main(String[]) fails
         assertTrue(locations.expectedPropertyFile().exists(), "Expected property file exists");
-        fail("Really want the build to succeed; just debug logging");
     }
 }

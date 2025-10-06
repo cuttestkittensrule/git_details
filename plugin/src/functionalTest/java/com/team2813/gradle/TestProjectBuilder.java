@@ -78,9 +78,9 @@ public class TestProjectBuilder {
         File buildFile = new File(projectDir, "build.gradle");
         File settingsFile = new File(projectDir, "settings.gradle");
         String relProperties = Optional.ofNullable(propertyPath).orElse("git-info.properties");
-        List<String> relPath = new ArrayList<>(List.of("resources", "git_version"));
+        List<String> relPath = new ArrayList<>(List.of("generated", "resources", "git_version"));
         relPath.addAll(List.of(relProperties.split("/")));
-        File propertyFile = new File(projectDir, Path.of("generated", relPath.toArray(String[]::new)).toString());
+        File propertyFile = new File(projectDir, Path.of("build", relPath.toArray(String[]::new)).toString());
         return new FileLocations(
                 buildFile,
                 settingsFile,

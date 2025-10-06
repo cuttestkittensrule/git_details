@@ -22,7 +22,7 @@ import java.util.List;
 public class GitVersionPlugin implements Plugin<Project> {
     private static final String EXTENSION_NAME = "git_version";
     private static final String BINARY_NAME = "git_details";
-    private static final Path GEN_DIR = Path.of("generated","resources", EXTENSION_NAME);
+    private static final String GEN_DIR = "generated/resources/" + EXTENSION_NAME;
     private static final String DEFAULT_PROPERTIES_PATH = "git-info.properties";
     static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
 
@@ -79,13 +79,10 @@ public class GitVersionPlugin implements Plugin<Project> {
         @TaskAction
         void createGitProperties() {
             Project project = getProject();
-            Path repoPath = project.getRootDir().toPath();
+            String repoPath = project.getRootDir().getPath();
             String resourceFilePath = getResourceFilePath().get();
-            List<String> dirs = new ArrayList<>(List.of(resourceFilePath.split("/")));
-            String first = dirs.remove(0);
-            Path relPropertyPath = GEN_DIR.resolve(Path.of(first, dirs.toArray(String[]::new)));
-            Path propertyPath = repoPath.resolve(relPropertyPath);
-            int error = generateGitProperties(repoPath.toString(), propertyPath.toString());
+            String propertyFile = project.getLayout().getBuildDirectory().dir(GEN_DIR).get().file(resourceFilePath).getAsFile().getPath();
+            int error = generateGitProperties(repoPath, propertyFile);
             if (error != 0) {
                 switch (error) {
                     case 0b0001_0001:
