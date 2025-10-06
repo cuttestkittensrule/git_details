@@ -1,21 +1,24 @@
 package com.team2813.gradle;
 
+import org.gradle.internal.impldep.org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.Assumptions;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class TestProjectBuilder {
     private String propertyPath;
+    private String mainClass;
     private boolean createGitRepo = true;
     private final File projectDir;
+    private final Map<String, List<URL>> srcFiles = new HashMap<>();
 
     public TestProjectBuilder(File projectDir) {
         this.projectDir = projectDir;
@@ -37,7 +40,29 @@ public class TestProjectBuilder {
      * @throws NullPointerException if {@code propertyPath} is {@code null}
      */
     public TestProjectBuilder propertyPath(String propertyPath) {
-        propertyPath = Objects.requireNonNull(propertyPath, "Please pass a non-null property path");
+        this.propertyPath = Objects.requireNonNull(propertyPath, "Please pass a non-null property path");
+        return this;
+    }
+
+    /**
+     * Add a file to the source set
+     * @param targetPackage The package to place the file in
+     * @param file The URL of the file (from {@link Class#getResource(String) if it is a resource}
+     * @return {@code this} for chaining
+     */
+    public TestProjectBuilder withSourceFile(String targetPackage, URL file) {
+        List<URL> urls = srcFiles.computeIfAbsent(targetPackage, (unused) -> new ArrayList<>());
+        urls.add(file);
+        return this;
+    }
+
+    /**
+     * Sets the main class of the project
+     * @param mainClass The main class, as would be put into the {@code build.gradle} file
+     * @return {@code this} for chaining
+     */
+    public TestProjectBuilder withMainClass(String mainClass) {
+        this.mainClass = Objects.requireNonNull(mainClass, "Please pass a non-null main class");
         return this;
     }
 
@@ -72,10 +97,47 @@ public class TestProjectBuilder {
                     git_version {
                       resourceFilePath = "%s"
                     }
+                    
                     """, propertyPath);
             buildString.append(toAdd);
         }
+        if (mainClass != null) {
+            String toAdd = String.format("""
+                    apply plugin : "application"
+                    application {
+                      mainClassName = "%s"
+                    }
+                    
+                    """, mainClass);
+            buildString.append(toAdd);
+        }
         writeString(locations.buildFile(), buildString.toString());
+        if (!srcFiles.isEmpty()) {
+            File baseSrc = new File(projectDir, Path.of("src", "main", "java").toString());
+            if (!baseSrc.mkdirs()) {
+                throw new RuntimeException("Could not create base directories!");
+            }
+            for (var entry : srcFiles.entrySet()) {
+                List<String> components = new ArrayList<>(List.of(entry.getKey().split("\\.")));
+                String first = components.remove(0);
+                File dirToWrite = new File(baseSrc, Path.of(first, components.toArray(String[]::new)).toString());
+                if (!dirToWrite.mkdirs()) {
+                    throw new RuntimeException(String.format("Could not create folder for \"%s\"!", entry.getKey()));
+                }
+                for (URL url : entry.getValue()) {
+                    Path sourcePath;
+                    try {
+                        sourcePath = Path.of(url.toURI());
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException("Failed to convert url to uri!", e);
+                    }
+                    String filename = FilenameUtils.getName(url.getPath());
+                    File targetFile = new File(dirToWrite, filename);
+                    Files.copy(sourcePath, targetFile.toPath());
+                }
+            }
+
+        }
         if (createGitRepo) {
             try {
                 // init git repository in the temporary directory

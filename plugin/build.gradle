@@ -8,6 +8,7 @@
 plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
     id 'java-gradle-plugin'
+    id 'maven-publish'
     id 'idea'
     id 'fr.stardustenterprises.rust.importer'
     id "com.github.johnrengelman.shadow" version "5.0.0"
@@ -70,6 +71,12 @@ tasks.register('functionalTest', Test) {
     testClassesDirs = sourceSets.functionalTest.output.classesDirs
     classpath = sourceSets.functionalTest.runtimeClasspath
     useJUnitPlatform()
+}
+
+publishing {
+    repositories {
+        mavenLocal()
+    }
 }
 
 gradlePlugin.testSourceSets.add(sourceSets.functionalTest)
