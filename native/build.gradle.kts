@@ -27,11 +27,11 @@ rust {
             outputName = "git_details.dll"
         }
 
-//        register("macos-x86_64") {
-//            target = "x86_64-apple-darwin"
-//            outputName = "libgit_details.dylib"
-//        }
-//
+        register("macos-x86_64") {
+            target = "x86_64-apple-darwin"
+            outputName = "libgit_details.dylib"
+        }
+
 //        register("macos-aarch64") {
 //            target = "aarch64-apple-darwin"
 //            outputName = "libgit_details.dylib"

@@ -18,7 +18,7 @@ class GitVersionPluginTest {
         Project project = ProjectBuilder.builder().build();
         var container = project.getPlugins();
         container.apply("java");
-        container.apply("com.team2813.gradle.git_version");
+        container.apply("com.team2813.gradle.git_details");
 
         // Verify the result
         assertNotNull(project.getTasks().findByName(GitVersionPlugin.GEN_PROPERTY_TASK_NAME));
