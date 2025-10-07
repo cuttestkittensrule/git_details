@@ -53,9 +53,9 @@ tasks.shadowJar {
 gradlePlugin {
     // Define the plugin
     plugins {
-        create("gitVersion") {
+        create("gitDetails") {
             id = 'com.team2813.gradle.git_details'
-            implementationClass = 'com.team2813.gradle.GitVersionPlugin'
+            implementationClass = 'com.team2813.gradle.GitDetailsPlugin'
         }
     }
 }

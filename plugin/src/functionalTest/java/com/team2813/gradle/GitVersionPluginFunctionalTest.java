@@ -77,26 +77,4 @@ class GitVersionPluginFunctionalTest {
         assertFalse(locations.expectedPropertyFile().exists(), "Properties file should not be created on failure!");
         assertTrue(result.getOutput().contains("A fundamental assumption of git state was broken!"), "Should have the exception message in output!");
     }
-
-    @Test
-    void accessResourceFromMain() throws  Exception {
-        // Arrange
-        Class<?> cls = GitVersionPluginFunctionalTest.class;
-        FileLocations locations = new TestProjectBuilder(projectDir)
-                .withSourceFile("com.team2813", cls.getResource("/Simple.java"))
-                .withMainClass("com.team2813.Simple")
-                .build();
-
-        // Act
-        GradleRunner runner = GradleRunner.create();
-        runner.forwardOutput();
-        runner.withPluginClasspath();
-        runner.withArguments("run");
-        runner.withProjectDir(projectDir);
-
-        // Assert
-
-        runner.build(); // assertions in Simple.java (resource); this will fail if Simple#main(String[]) fails
-        assertTrue(locations.expectedPropertyFile().exists(), "Expected property file exists");
-    }
 }

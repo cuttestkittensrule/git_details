@@ -5,37 +5,33 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Properties;
 
-class Simple {
+class GVersionCompatibility {
     public static void main(String[] args) throws Exception {
         String propertiesFile = "/git-info.properties";
         if (args.length >= 1) {
             propertiesFile = args[0];
         }
         Properties prop = new Properties();
-        try (InputStream is = Simple.class.getResourceAsStream(propertiesFile)) {
+        try (InputStream is = GVersionCompatibility.class.getResourceAsStream(propertiesFile)) {
             prop.load(is);
         }
         String sha = Objects.requireNonNull(prop.getProperty("git_sha"), "git_sha does not exist in properties!");
         if (sha.isBlank()) {
             throw new RuntimeException("git_sha is blank!");
         }
-        String changes = Objects.requireNonNull(prop.getProperty("has_uncommited_changes"), "has_uncommited_changes does not exist in properties!");
-        if (!changes.equals("true") && !changes.equals("false")) {
-            throw new RuntimeException(String.format("Expected valid boolean for has_uncommited_changes, but was \"%s\"", changes));
+        String dirty = Objects.requireNonNull(prop.getProperty("dirty"), "dirty does not exist in properties!");
+        int dirtyInt = Integer.parseInt(dirty);
+        if (dirtyInt != 0 && dirtyInt != 1) {
+            throw new RuntimeException(String.format("dirty does not have a valid value! Expected 0 or 1, but was %s!", dirtyInt));
         }
-        boolean bothTrue = changes.equals("true") && Boolean.parseBoolean(changes);
-        boolean bothFalse = changes.equals("false") && !Boolean.parseBoolean(changes);
-        if (!bothTrue && !bothFalse) {
-            throw new RuntimeException("\"True\" and \"False\" did not parse as proper booleans");
-        }
-        String commitDate = prop.getProperty("commit_date");
+        String commitDate = prop.getProperty("git_date");
         if (commitDate != null) {
             Instant commitDateInst = Instant.parse(commitDate);
             if (commitDateInst.isAfter(Instant.now())) {
                 throw new RuntimeException("Commit date is after the present!");
             }
         } else {
-            System.err.println("WARNING: Ambiguous date!");
+            throw new RuntimeException("Git should generate a valid date!");
         }
         String branchName = prop.getProperty("branch_name");
         if (branchName == null) {

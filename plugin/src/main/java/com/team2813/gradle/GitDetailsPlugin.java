@@ -15,14 +15,14 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 
 // TODO: Force load of java plugin before this plugin, or fail neatly if java plugin is not loaded (if possible)
-public class GitVersionPlugin implements Plugin<Project> {
-    private static final String EXTENSION_NAME = "git_version";
+public class GitDetailsPlugin implements Plugin<Project> {
+    private static final String EXTENSION_NAME = "git_details";
     private static final String BINARY_NAME = "git_details";
     private static final String GEN_DIR = "generated/resources/" + EXTENSION_NAME;
     private static final String DEFAULT_PROPERTIES_PATH = "git-info.properties";
     static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
 
-    interface GitVersionExtension {
+    public interface GitDetailsExtension {
         Property<String> getResourceFilePath();
         Property<Boolean> getGVersionBackwardCompatibility();
         Property<Boolean> getGenerateBuildDate();
@@ -52,7 +52,7 @@ public class GitVersionPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         // allow configuration w/defaults
-        var extension = project.getExtensions().create(EXTENSION_NAME, GitVersionExtension.class);
+        var extension = project.getExtensions().create(EXTENSION_NAME, GitDetailsExtension.class);
         extension.getResourceFilePath().convention(DEFAULT_PROPERTIES_PATH);
         extension.getGVersionBackwardCompatibility().convention(false);
         extension.getGenerateBuildDate().convention(true);

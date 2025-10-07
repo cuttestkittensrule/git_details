@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * A simple unit test for the 'com.team2813.gradle.git_version' plugin.
  */
-class GitVersionPluginTest {
+class GitDetailsPluginTest {
     @Test
     void pluginRegistersPropertyGenerationTask() {
         // Create a test project and apply the plugin
@@ -21,6 +21,6 @@ class GitVersionPluginTest {
         container.apply("com.team2813.gradle.git_details");
 
         // Verify the result
-        assertNotNull(project.getTasks().findByName(GitVersionPlugin.GEN_PROPERTY_TASK_NAME));
+        assertNotNull(project.getTasks().findByName(GitDetailsPlugin.GEN_PROPERTY_TASK_NAME));
     }
 }

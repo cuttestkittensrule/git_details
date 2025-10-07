@@ -92,7 +92,6 @@ impl Results {
         }
     }
     pub fn create_java_properties<P: AsRef<Path>>(self, filepath: P) -> Result<()> {
-        const COMPAT_MSG: &str = "# The following two values are identical; prior is deprecated and kept for gversion compatability";
         fs::create_dir_all(filepath.as_ref().parent().ok_or_else(|| Error::from("Cannot get parent directory!"))?)?;
         let mut file = File::create(filepath)?;
         writeln!(file, "git_sha={}", self.sha)?;
@@ -106,7 +105,6 @@ impl Results {
         if let Some(build_date) = self.build_time {
             writeln!(file, "build_date={build_date:?}")?;
         }
-        writeln!(file, "{}", COMPAT_MSG)?;
         if self.options.contains(Options::GVERSION_COMPAT) {
             writeln!(file, "dirty={}", self.dirty as u8)?;
         } else {

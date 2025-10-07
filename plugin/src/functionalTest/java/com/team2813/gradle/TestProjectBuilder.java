@@ -15,6 +15,9 @@ import java.util.*;
 
 public class TestProjectBuilder {
     private String propertyPath;
+    private Boolean gVersionCompatibility;
+    private Boolean generateBuildDate;
+    private Boolean useLatestDate;
     private String mainClass;
     private boolean createGitRepo = true;
     private final File projectDir;
@@ -50,7 +53,7 @@ public class TestProjectBuilder {
      * @param file The URL of the file (from {@link Class#getResource(String) if it is a resource}
      * @return {@code this} for chaining
      */
-    public TestProjectBuilder withSourceFile(String targetPackage, URL file) {
+    public TestProjectBuilder addSourceFile(String targetPackage, URL file) {
         List<URL> urls = srcFiles.computeIfAbsent(targetPackage, (unused) -> new ArrayList<>());
         urls.add(file);
         return this;
@@ -61,8 +64,43 @@ public class TestProjectBuilder {
      * @param mainClass The main class, as would be put into the {@code build.gradle} file
      * @return {@code this} for chaining
      */
-    public TestProjectBuilder withMainClass(String mainClass) {
+    public TestProjectBuilder mainClass(String mainClass) {
         this.mainClass = Objects.requireNonNull(mainClass, "Please pass a non-null main class");
+        return this;
+    }
+
+    /**
+     * Sets if gversion compatibility should be enabled.
+     * If this is not specified, the default configuration will be used.
+     * @param gVersionCompatibility If gversion compatibility should be enabled
+     * @return {@code this} for chaining
+     */
+    public TestProjectBuilder gVersionCompatibility(boolean gVersionCompatibility) {
+        this.gVersionCompatibility = gVersionCompatibility;
+        return this;
+    }
+
+    /**
+     * Sets if the build date should be generated.
+     * If this is not specified, the default configuration will be used.
+     * @param generateBuildDate If the build date should be generated
+     * @return {@code this} for chaining
+     */
+    public TestProjectBuilder generateBuildDate(boolean generateBuildDate) {
+        this.generateBuildDate = generateBuildDate;
+        return this;
+    }
+
+    /**
+     * Sets if the latest date should be used.
+     * In the event of a fold in time, either the earliest or latest time is used.
+     * If this is {@code true}, the latest possible is used, and the earliest possible time is used if this is {@code false}.
+     * If this isn't specified, the default value is used
+     * @param useLatestDate if the latest date should be used.
+     * @return {@code this} for chaining
+     */
+    public TestProjectBuilder useLatestDate(boolean useLatestDate) {
+        this.useLatestDate= useLatestDate;
         return this;
     }
 
@@ -78,7 +116,7 @@ public class TestProjectBuilder {
         File buildFile = new File(projectDir, "build.gradle");
         File settingsFile = new File(projectDir, "settings.gradle");
         String relProperties = Optional.ofNullable(propertyPath).orElse("git-info.properties");
-        List<String> relPath = new ArrayList<>(List.of("generated", "resources", "git_version"));
+        List<String> relPath = new ArrayList<>(List.of("generated", "resources", "git_details"));
         relPath.addAll(List.of(relProperties.split("/")));
         File propertyFile = new File(projectDir, Path.of("build", relPath.toArray(String[]::new)).toString());
         return new FileLocations(
@@ -92,14 +130,21 @@ public class TestProjectBuilder {
         FileLocations locations = createFileLocations();
         writeString(locations.settingsFile(), "");
         StringBuilder buildString = new StringBuilder(pluginStr);
-        if (propertyPath != null) {
-            String toAdd = String.format("""
-                    git_version {
-                      resourceFilePath = "%s"
-                    }
-                    
-                    """, propertyPath);
-            buildString.append(toAdd);
+        if (propertyPath != null || gVersionCompatibility != null || generateBuildDate != null || useLatestDate != null) {
+            buildString.append("git_details {").append(System.lineSeparator());
+            if (propertyPath != null) {
+                buildString.append(String.format("  resourceFilePath = \"%s\"%n", propertyPath));
+            }
+            if (gVersionCompatibility != null) {
+                buildString.append(String.format("  gVersionBackwardCompatibility = %b%n", gVersionCompatibility));
+            }
+            if (generateBuildDate != null) {
+                buildString.append(String.format("  generateBuildDate = %b%n", generateBuildDate));
+            }
+            if (useLatestDate != null) {
+                buildString.append(String.format("  useLatestDate = %b%n", useLatestDate));
+            }
+            buildString.append("}").append(System.lineSeparator());
         }
         if (mainClass != null) {
             String toAdd = String.format("""
