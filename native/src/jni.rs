@@ -4,7 +4,7 @@ use jni::JNIEnv;
 use jni::objects::{JClass, JString};
 use jni::sys::jint;
 
-use crate::Results;
+use crate::{Options, Results};
 
 type Result<T> = std::result::Result<T, NonZero<jint>>;
 
@@ -49,8 +49,9 @@ pub extern "system" fn Java_com_team2813_gradle_GitVersionPlugin_generateGitProp
     _: JClass<'local>,
     repo_path: JString<'local>,
     property_path: JString<'local>,
+    options: jint,
 ) -> jint {
-    match inner_gen_git_prop(env, repo_path, property_path) {
+    match inner_gen_git_prop(env, repo_path, property_path, options) {
         Err(ecode) => ecode.get(),
         Ok(_) => 0,
     }
@@ -60,13 +61,16 @@ fn inner_gen_git_prop<'local>(
     mut env: JNIEnv<'local>,
     repo_path: JString<'local>,
     property_path: JString<'local>,
+    options: jint,
 ) -> Result<()> {
+    let options = i32::cast_unsigned(options);
+    let options = Options::from_bits_truncate(options);
     let repo_path: String = env.get_string(&repo_path).map_err(|_| err_code!(0b0001_0001))?.into();
     let property_path: String = env
         .get_string(&property_path)
         .map_err(|_| err_code!(0b0001_0010))?
         .into();
-    let results = Results::new(repo_path).ok_or(err_code!(0b0010_0001))?;
+    let results = Results::options_new(repo_path, options).ok_or(err_code!(0b0010_0001))?;
     results
         .create_java_properties(property_path)
         .map_err(|err| {

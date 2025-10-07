@@ -5,33 +5,54 @@ use std::fs;
 use std::io::Write;
 use std::{fs::File, path::Path};
 
-use chrono::{DateTime, FixedOffset, TimeZone};
+use bitflags::bitflags;
+use chrono::{DateTime, FixedOffset, Local, TimeZone};
 use git2::{Branch, Repository, StatusOptions, Time};
 
 pub type Error = Box<dyn std::error::Error>;
 pub type Result<T> = std::result::Result<T, Error>;
 
+bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    pub struct Options: u32 {
+        const GVERSION_COMPAT = 1;
+        const GEN_BUILD_DATE = 1 << 1;
+        const USE_LATEST_DATE = 1 << 2;
+    }
+}
+
 #[derive(Debug)]
 pub struct Results {
+    options: Options,
     sha: String,
     commit_time: Option<DateTime<FixedOffset>>,
     dirty: bool,
     branch_name: Option<String>,
+    build_time: Option<DateTime<Local>>,
 }
 
 impl Results {
-    fn calculate_time(git_time: Time) -> Option<DateTime<FixedOffset>> {
+    fn calculate_time(git_time: Time, options: Options) -> Option<DateTime<FixedOffset>> {
         let offset = FixedOffset::east_opt(git_time.offset_minutes() * 60)?;
-        offset
-            .timestamp_millis_opt(git_time.seconds() * 1_000)
-            .single()
+        let local_result = offset.timestamp_millis_opt(git_time.seconds() * 1_000);
+        if options.contains(Options::USE_LATEST_DATE) {
+            local_result.latest()
+        } else {
+            local_result.earliest()
+        }
     }
-    pub fn new<P: AsRef<Path>>(filepath: P) -> Option<Results> {
+    pub fn options_new<P: AsRef<Path>>(filepath: P, options: Options) -> Option<Results> {
+        let build_time = if options.contains(Options::GVERSION_COMPAT) {
+            Some(Local::now())
+        } else {
+            None
+        };
+        
         let repo = Repository::open(filepath).ok()?;
         let head = repo.head().ok()?;
         let commit = head.peel_to_commit().ok()?;
         let sha = format!("{:?}", commit.id());
-        let commit_time = Self::calculate_time(commit.time());
+        let commit_time = Self::calculate_time(commit.time(), options);
         let dirty = !repo
             .statuses(Some(StatusOptions::new().include_ignored(false)))
             .ok()?
@@ -44,11 +65,16 @@ impl Results {
         };
 
         Some(Results {
+            options,
             sha,
             commit_time,
             dirty,
             branch_name,
+            build_time,
         })
+    }
+    pub fn new<P: AsRef<Path>>(filepath: P) -> Option<Results> {
+        Self::options_new(filepath, Options::empty())
     }
     pub fn sha(&self) -> &str {
         &self.sha
@@ -71,13 +97,21 @@ impl Results {
         let mut file = File::create(filepath)?;
         writeln!(file, "git_sha={}", self.sha)?;
         if let Some(commit_time) = self.commit_time {
-            writeln!(file, "{}", COMPAT_MSG)?;
-            writeln!(file, "git_date={commit_time:?}")?;
-            writeln!(file, "commit_date={commit_time:?}")?;
+            if self.options.contains(Options::GVERSION_COMPAT) {
+                writeln!(file, "git_date={commit_time:?}")?;
+            } else {
+                writeln!(file, "commit_date={commit_time:?}")?;
+            }
+        }
+        if let Some(build_date) = self.build_time {
+            writeln!(file, "build_date={build_date:?}")?;
         }
         writeln!(file, "{}", COMPAT_MSG)?;
-        writeln!(file, "dirty={}", self.dirty as u8)?;
-        writeln!(file, "has_uncommited_changes={}", self.dirty)?;
+        if self.options.contains(Options::GVERSION_COMPAT) {
+            writeln!(file, "dirty={}", self.dirty as u8)?;
+        } else {
+            writeln!(file, "has_uncommited_changes={}", self.dirty)?;
+        }
         if let Some(branch_name) = self.branch_name {
             writeln!(file, "branch_name={branch_name}")?;
         }

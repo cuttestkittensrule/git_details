@@ -14,10 +14,6 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
 // TODO: Force load of java plugin before this plugin, or fail neatly if java plugin is not loaded (if possible)
 public class GitVersionPlugin implements Plugin<Project> {
     private static final String EXTENSION_NAME = "git_version";
@@ -28,6 +24,9 @@ public class GitVersionPlugin implements Plugin<Project> {
 
     interface GitVersionExtension {
         Property<String> getResourceFilePath();
+        Property<Boolean> getGVersionBackwardCompatibility();
+        Property<Boolean> getGenerateBuildDate();
+        Property<Boolean> getUseLatestDate();
     }
 
     static {
@@ -48,18 +47,24 @@ public class GitVersionPlugin implements Plugin<Project> {
      * @param propertyPath The path to the Java properties file
      * @return an error code
      */
-    private static native int generateGitProperties(String repoPath, String propertyPath);
+    private static native int generateGitProperties(String repoPath, String propertyPath, int options);
 
     @Override
     public void apply(Project project) {
         // allow configuration w/defaults
         var extension = project.getExtensions().create(EXTENSION_NAME, GitVersionExtension.class);
         extension.getResourceFilePath().convention(DEFAULT_PROPERTIES_PATH);
+        extension.getGVersionBackwardCompatibility().convention(false);
+        extension.getGenerateBuildDate().convention(true);
+        extension.getUseLatestDate().convention(false);
 
         // create task to generate properties file
         var taskProvider = project.getTasks().register(GEN_PROPERTY_TASK_NAME, GeneratePropertyFile.class);
         taskProvider.configure(task -> {
             task.getResourceFilePath().set(extension.getResourceFilePath());
+            task.getGVersionBackwardCompatibility().set(extension.getGVersionBackwardCompatibility());
+            task.getGenerateBuildDate().set(extension.getGenerateBuildDate());
+            task.getUseLatestDate().set(extension.getUseLatestDate());
         });
         // which should be depended on by the java compilation task
         project.getTasks().getByName(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).dependsOn(taskProvider);
@@ -75,6 +80,12 @@ public class GitVersionPlugin implements Plugin<Project> {
 
         @Input
         abstract Property<String> getResourceFilePath();
+        @Input
+        abstract Property<Boolean> getGVersionBackwardCompatibility();
+        @Input
+        abstract Property<Boolean> getGenerateBuildDate();
+        @Input
+        abstract Property<Boolean> getUseLatestDate();
 
         @TaskAction
         void createGitProperties() {
@@ -82,7 +93,17 @@ public class GitVersionPlugin implements Plugin<Project> {
             String repoPath = project.getRootDir().getPath();
             String resourceFilePath = getResourceFilePath().get();
             String propertyFile = project.getLayout().getBuildDirectory().dir(GEN_DIR).get().file(resourceFilePath).getAsFile().getPath();
-            int error = generateGitProperties(repoPath, propertyFile);
+            int options = 0;
+            if (getGVersionBackwardCompatibility().get()) {
+                options |= 1;
+            }
+            if (getGenerateBuildDate().get()) {
+                options |= 1 << 1;
+            }
+            if (getUseLatestDate().get()) {
+                options |= 1 << 2;
+            }
+            int error = generateGitProperties(repoPath, propertyFile, options);
             if (error != 0) {
                 switch (error) {
                     case 0b0001_0001:
