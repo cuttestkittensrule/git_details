@@ -2,6 +2,7 @@ package com.team2813;
 
 import java.io.InputStream;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -33,14 +34,27 @@ class GVersionCompatibility {
         } else {
             throw new RuntimeException("Git should generate a valid date!");
         }
-        String buildDate = prop.getProperty("git_date");
+        String buildDate = prop.getProperty("build_date");
+        Instant buildDateInst;
         if (buildDate != null) {
-            Instant buildDateInst = Instant.parse(buildDate);
+            buildDateInst = Instant.parse(buildDate);
             if (buildDateInst.isAfter(Instant.now())) {
                 throw new RuntimeException("Build date is after the present!");
             }
         } else {
             throw new RuntimeException("Should have a valid build date!");
+        }
+        String buildUnix = prop.getProperty("build_unix_time");
+        if (buildUnix != null) {
+            Instant buildUnixInst = Instant.ofEpochSecond(Long.parseLong(buildUnix));
+            if (buildUnixInst.isAfter(Instant.now())) {
+                throw new RuntimeException("Build unix time is after the present!");
+            }
+            if (Math.abs(buildUnixInst.until(buildDateInst, ChronoUnit.SECONDS)) > 1) {
+                throw new RuntimeException("Build date and build unix time are more than 1 second apart!")
+            }
+        } else {
+            throw new RuntimeException("Should have a valid build unix time")
         }
         String branchName = prop.getProperty("branch_name");
         if (branchName == null) {
