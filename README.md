@@ -19,21 +19,33 @@ plugins {
 
 ### Configuration
 
-| Configuration    | Description                         | Default Value         |
-|------------------|-------------------------------------|-----------------------|
-| resourceFilePath | path of the generated resource file | "git-info.properties" |
+| Configuration         | Description                               | Default Value         |
+|-----------------------|-------------------------------------------|-----------------------|
+| resourceFilePath      | path of the generated resource file       | "git-info.properties" |
+| gversionCompatibility | If gversion property names should be used | false                 |
 
 ### Generated Properties File Contents
 
-| Property Name           | Value                                                                                                | Type    |
-|-------------------------|------------------------------------------------------------------------------------------------------|---------|
-| git_sha                 | commit SHA of the current checked out commit                                                         | String  |
-| commit_date             | ISO formatted date that the checked out commit was made. Not present if the commit date is ambiguous | String  |
-| git_date                | same as above; deprecated and kept in for gversion compatability                                     | String  |
-| has_uncommitted_changes | if there are uncommited changes                                                                      | boolean |
-| dirty                   | same as above; deprecated and kept in for gversion compatability                                     | int     |
-| branch_name             | The name of the checked out branch. Not present if a branch is not checked out                       | String  |
+#### Without gversion compatibility
 
+| Property Name           | Value                                                                                                  | Type    |
+|-------------------------|--------------------------------------------------------------------------------------------------------|---------|
+| git_sha                 | commit SHA of the current checked out commit                                                           | String  |
+| commit_date             | ISO formatted datetime that the checked out commit was made. Not present if the commit date is invalid | String  |
+| build_date              | ISO formatted datetime that the code was built.                                                        | String  |
+| has_uncommitted_changes | if there are uncommited changes                                                                        | boolean |
+| branch_name             | The name of the checked out branch. Not present if a branch is not checked out                         | String  |
+
+#### With gversion compatibility
+
+| Property Name   | Value                                                                                                    | Type   |
+|-----------------|----------------------------------------------------------------------------------------------------------|--------|
+| git_sha         | commit SHA of the current checked out commit                                                             | String |
+| git_date        | ISO formatted datetime that the checked out commit was made. Not present if the commit date is ambiguous | String |
+| build_date      | ISO formatted datetime that the code was built.                                                          | String |
+| build_unix_time | UNIX timestamp of the the build time                                                                     | long   |
+| dirty           | if there are uncommited changes                                                                          | int    |
+| branch_name     | The name of the checked out branch. Not present if a branch is not checked out                           | String |
 
 
 ## Prerequisites for building
