@@ -51,10 +51,10 @@ class GVersionCompatibility {
                 throw new RuntimeException("Build unix time is after the present!");
             }
             if (Math.abs(buildUnixInst.until(buildDateInst, ChronoUnit.SECONDS)) > 1) {
-                throw new RuntimeException("Build date and build unix time are more than 1 second apart!")
+                throw new RuntimeException("Build date and build unix time are more than 1 second apart!");
             }
         } else {
-            throw new RuntimeException("Should have a valid build unix time")
+            throw new RuntimeException("Should have a valid build unix time");
         }
         String branchName = prop.getProperty("branch_name");
         if (branchName == null) {

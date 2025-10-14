@@ -80,30 +80,6 @@ public class TestProjectBuilder {
         return this;
     }
 
-    /**
-     * Sets if the build date should be generated.
-     * If this is not specified, the default configuration will be used.
-     * @param generateBuildDate If the build date should be generated
-     * @return {@code this} for chaining
-     */
-    public TestProjectBuilder generateBuildDate(boolean generateBuildDate) {
-        this.generateBuildDate = generateBuildDate;
-        return this;
-    }
-
-    /**
-     * Sets if the latest date should be used.
-     * In the event of a fold in time, either the earliest or latest time is used.
-     * If this is {@code true}, the latest possible is used, and the earliest possible time is used if this is {@code false}.
-     * If this isn't specified, the default value is used
-     * @param useLatestDate if the latest date should be used.
-     * @return {@code this} for chaining
-     */
-    public TestProjectBuilder useLatestDate(boolean useLatestDate) {
-        this.useLatestDate= useLatestDate;
-        return this;
-    }
-
     private static final String pluginStr = """
             plugins {
               id('java')

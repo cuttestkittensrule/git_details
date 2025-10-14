@@ -58,59 +58,12 @@ public class ActualJavaCodeTest {
         assertTrue(locations.expectedPropertyFile().exists(), "Expected property file doesn't exist!");
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void simpleWithUseLatestDate(boolean useLatestDate) throws Exception {
-        // Arrange
-        Class<?> cls = ActualJavaCodeTest.class;
-        FileLocations locations = new TestProjectBuilder(projectDir)
-                .useLatestDate(useLatestDate)
-                .addSourceFile("com.team2813", cls.getResource("/Simple.java"))
-                .mainClass("com.team2813.Simple")
-                .build();
-
-        // Act
-        GradleRunner runner = GradleRunner.create();
-        runner.forwardOutput();
-        runner.withPluginClasspath();
-        runner.withArguments("run");
-        runner.withProjectDir(projectDir);
-        runner.build(); // assertions in Simple.java (resource); this will fail if Simple#main(String[]) fails
-
-        // Assert
-        assertTrue(locations.expectedPropertyFile().exists(), "Expected property file doesn't exist!");
-    }
-
     @Test
     void gVersionCompatibility() throws Exception {
         // Arrange
         Class<?> cls = ActualJavaCodeTest.class;
         FileLocations locations = new TestProjectBuilder(projectDir)
                 .gVersionCompatibility(true)
-                .addSourceFile("com.team2813", cls.getResource("/GVersionCompatibility.java"))
-                .mainClass("com.team2813.GVersionCompatibility")
-                .build();
-
-        // Act
-        GradleRunner runner = GradleRunner.create();
-        runner.forwardOutput();
-        runner.withPluginClasspath();
-        runner.withArguments("run");
-        runner.withProjectDir(projectDir);
-        runner.build();
-
-        // Assert
-        assertTrue(locations.expectedPropertyFile().exists(), "Expected property file doesn't exist!");
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void gVersionCompatibilityWithUseLatestDate(boolean useLatestDate) throws Exception {
-        // Arrange
-        Class<?> cls = ActualJavaCodeTest.class;
-        FileLocations locations = new TestProjectBuilder(projectDir)
-                .gVersionCompatibility(true)
-                .useLatestDate(useLatestDate)
                 .addSourceFile("com.team2813", cls.getResource("/GVersionCompatibility.java"))
                 .mainClass("com.team2813.GVersionCompatibility")
                 .build();
