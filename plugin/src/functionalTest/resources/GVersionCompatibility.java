@@ -33,6 +33,15 @@ class GVersionCompatibility {
         } else {
             throw new RuntimeException("Git should generate a valid date!");
         }
+        String buildDate = prop.getProperty("git_date");
+        if (buildDate != null) {
+            Instant buildDateInst = Instant.parse(buildDate);
+            if (buildDateInst.isAfter(Instant.now())) {
+                throw new RuntimeException("Build date is after the present!");
+            }
+        } else {
+            throw new RuntimeException("Should have a valid build date!");
+        }
         String branchName = prop.getProperty("branch_name");
         if (branchName == null) {
             System.err.println("WARNING: no branch name!");

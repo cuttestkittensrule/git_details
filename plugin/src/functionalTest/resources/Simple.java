@@ -35,7 +35,16 @@ class Simple {
                 throw new RuntimeException("Commit date is after the present!");
             }
         } else {
-            System.err.println("WARNING: Ambiguous date!");
+            throw new RuntimeException("Should have a valid commit date!");
+        }
+        String buildDate = prop.getProperty("build_date");
+        if (buildDate != null) {
+            Instant buildDateInst = Instant.parse(buildDate);
+            if (buildDateInst.isAfter(Instant.now())) {
+                throw new RuntimeException("Build date is after the present!");
+            }
+        } else {
+            throw new RuntimeException("Should have a valid build date!");
         }
         String branchName = prop.getProperty("branch_name");
         if (branchName == null) {

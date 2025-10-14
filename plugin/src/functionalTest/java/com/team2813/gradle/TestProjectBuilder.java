@@ -136,13 +136,7 @@ public class TestProjectBuilder {
                 buildString.append(String.format("  resourceFilePath = \"%s\"%n", propertyPath));
             }
             if (gVersionCompatibility != null) {
-                buildString.append(String.format("  gVersionBackwardCompatibility = %b%n", gVersionCompatibility));
-            }
-            if (generateBuildDate != null) {
-                buildString.append(String.format("  generateBuildDate = %b%n", generateBuildDate));
-            }
-            if (useLatestDate != null) {
-                buildString.append(String.format("  useLatestDate = %b%n", useLatestDate));
+                buildString.append(String.format("  gversionBackwardCompatibility = %b%n", gVersionCompatibility));
             }
             buildString.append("}").append(System.lineSeparator());
         }

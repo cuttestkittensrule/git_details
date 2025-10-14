@@ -16,8 +16,6 @@ bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
     pub struct Options: u32 {
         const GVERSION_COMPAT = 1;
-        const GEN_BUILD_DATE = 1 << 1;
-        const USE_LATEST_DATE = 1 << 2;
     }
 }
 
@@ -28,31 +26,23 @@ pub struct Results {
     commit_time: Option<DateTime<FixedOffset>>,
     dirty: bool,
     branch_name: Option<String>,
-    build_time: Option<DateTime<Local>>,
+    build_date: DateTime<Local>,
 }
 
 impl Results {
-    fn calculate_time(git_time: Time, options: Options) -> Option<DateTime<FixedOffset>> {
+    fn calculate_time(git_time: Time) -> Option<DateTime<FixedOffset>> {
         let offset = FixedOffset::east_opt(git_time.offset_minutes() * 60)?;
         let local_result = offset.timestamp_millis_opt(git_time.seconds() * 1_000);
-        if options.contains(Options::USE_LATEST_DATE) {
-            local_result.latest()
-        } else {
-            local_result.earliest()
-        }
+        local_result.latest()
     }
     pub fn options_new<P: AsRef<Path>>(filepath: P, options: Options) -> Option<Results> {
-        let build_time = if options.contains(Options::GVERSION_COMPAT) {
-            Some(Local::now())
-        } else {
-            None
-        };
+        let build_time = Local::now();
         
         let repo = Repository::open(filepath).ok()?;
         let head = repo.head().ok()?;
         let commit = head.peel_to_commit().ok()?;
         let sha = format!("{:?}", commit.id());
-        let commit_time = Self::calculate_time(commit.time(), options);
+        let commit_time = Self::calculate_time(commit.time());
         let dirty = !repo
             .statuses(Some(StatusOptions::new().include_ignored(false)))
             .ok()?
@@ -70,7 +60,7 @@ impl Results {
             commit_time,
             dirty,
             branch_name,
-            build_time,
+            build_date: build_time,
         })
     }
     pub fn new<P: AsRef<Path>>(filepath: P) -> Option<Results> {
@@ -102,10 +92,9 @@ impl Results {
                 writeln!(file, "commit_date={commit_time:?}")?;
             }
         }
-        if let Some(build_date) = self.build_time {
-            writeln!(file, "build_date={build_date:?}")?;
-        }
+        writeln!(file, "build_date={:?}", self.build_date)?;
         if self.options.contains(Options::GVERSION_COMPAT) {
+            writeln!(file, "build_unix_time={}", self.build_date.timestamp())?;
             writeln!(file, "dirty={}", self.dirty as u8)?;
         } else {
             writeln!(file, "has_uncommited_changes={}", self.dirty)?;
