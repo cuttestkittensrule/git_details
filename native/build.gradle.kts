@@ -22,10 +22,25 @@ rust {
             outputName = "libgit_details.so"
         }
 
+	register("linux-aarch64") {
+	    target = "aarch64-unknown-linux-gnu"
+	    outputName = "libgit_details.so"
+	}
+
+	register("win-i686") {
+	    target = "i686-pc-windows-gnu"
+	    outputName = "git_details.dll"
+	}
+
         register("win-x86_64") {
             target = "x86_64-pc-windows-gnu"
             outputName = "git_details.dll"
         }
+
+	register("win-aarch64") {
+	    target = "aarch64-pc-windows-gnullvm"
+	    outputName = "git_details.dll"
+	}
 
         register("macos-x86_64") {
             target = "x86_64-apple-darwin"
