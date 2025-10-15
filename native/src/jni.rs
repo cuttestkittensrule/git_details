@@ -44,7 +44,7 @@ macro_rules! err_code {
 ///
 /// All other error cases are represented by properties not being generated in the properties file.
 #[unsafe(no_mangle)]
-pub extern "system" fn Java_com_team2813_gradle_GitDetailsPlugin_generateGitProperties<'local>(
+pub extern "system" fn Java_com_team2813_gradle_GitDetailsJNI_generateGitProperties<'local>(
     env: JNIEnv<'local>,
     _: JClass<'local>,
     repo_path: JString<'local>,

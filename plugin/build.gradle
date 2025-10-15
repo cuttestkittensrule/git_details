@@ -38,6 +38,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation "fr.stardustenterprises:yanl:0.7.4"
+    implementation "fr.stardustenterprises:plat4k:1.6.2"
     rust(project(":native"))
 }
 

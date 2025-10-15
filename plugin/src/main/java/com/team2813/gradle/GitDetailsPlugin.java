@@ -14,10 +14,11 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 
+import static com.team2813.gradle.GitDetailsJNI.generateGitProperties;
+
 // TODO: Force load of java plugin before this plugin, or fail neatly if java plugin is not loaded (if possible)
 public class GitDetailsPlugin implements Plugin<Project> {
     private static final String EXTENSION_NAME = "git_details";
-    private static final String BINARY_NAME = "git_details";
     private static final String GEN_DIR = "generated/resources/" + EXTENSION_NAME;
     private static final String DEFAULT_PROPERTIES_PATH = "git-info.properties";
     static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
@@ -26,26 +27,6 @@ public class GitDetailsPlugin implements Plugin<Project> {
         Property<String> getResourceFilePath();
         Property<Boolean> getGversionBackwardCompatibility();
     }
-
-    static {
-        NativeLoader loader = new NativeLoader.Builder().build();
-        try {
-            loader.loadLibrary(BINARY_NAME, false);
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            throw new RuntimeException("Failed to load library", e);
-        }
-
-    }
-
-    /**
-     * Generate a Java properties file with git information.
-     *
-     * @param repoPath The path to the git repository
-     * @param propertyPath The path to the Java properties file
-     * @return an error code
-     */
-    private static native int generateGitProperties(String repoPath, String propertyPath, int options);
 
     @Override
     public void apply(Project project) {
