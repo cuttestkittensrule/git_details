@@ -57,6 +57,7 @@ rustImport {
 }
 
 pluginBundle {
+    website = "https://github.com/cuttestkittensrule/git_details"
     vcsUrl = "https://github.com/cuttestkittensrule/git_details"
     tags = ['git', 'vcs']
 }
