@@ -8,10 +8,10 @@
 plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '1.2.1'
     id 'idea'
     id 'fr.stardustenterprises.rust.importer'
-    id "com.github.johnrengelman.shadow" version "5.0.0"
+    id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '1.0.0-rc-1'
 }
 
 group = "com.team2813.gradle"
@@ -47,12 +47,12 @@ rustImport {
     layout.set("hierarchical")
 }
 
-tasks.shadowJar {
-    archiveClassifier.set("")
+pluginBundle {
+    vcsUrl = "https://github.com/cuttestkittensrule/git_details"
+    tags = ['git', 'vcs']
 }
 
 gradlePlugin {
-    vcsUrl = "https://github.com/cuttestkittensrule/git_details"
     // Define the plugin
     plugins {
         create("gitDetails") {
@@ -60,7 +60,6 @@ gradlePlugin {
             implementationClass = 'com.team2813.gradle.GitDetailsPlugin'
             displayName = "Git Details"
             description = "A plugin for getting information about git with no prerequisite git installation"
-            tags.addAll('git', 'vcs')
         }
     }
 }
