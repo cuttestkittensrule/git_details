@@ -30,6 +30,8 @@ spotless {
     java {
         removeUnusedImports()
         googleJavaFormat().reorderImports(true).formatJavadoc(true)
+        formatAnnotations()
+        licenseHeader '/* Copyright $YEAR Kyle C */'
     }
 }
 
