@@ -19,8 +19,8 @@ public class ActualJavaCodeTest {
     Class<?> cls = ActualJavaCodeTest.class;
     FileLocations locations =
         new TestProjectBuilder(projectDir)
-            .addSourceFile("com.team2813", cls.getResource("/Simple.java"))
-            .mainClass("com.team2813.Simple")
+            .addSourceFile("io.github.cuttestkittensrule", cls.getResource("/Simple.java"))
+            .mainClass("io.github.cuttestkittensrule.Simple")
             .build();
 
     // Act
@@ -29,8 +29,8 @@ public class ActualJavaCodeTest {
     runner.withPluginClasspath();
     runner.withArguments("run");
     runner.withProjectDir(projectDir);
-    runner.build(); // assertions in Simple.java (resource); this will fail if Simple#main(String[])
-    // fails
+    // assertions in Simple.java (resource); this will fail if Simple#main(String[]) fails
+    runner.build();
 
     // Assert
     assertTrue(locations.expectedPropertyFile().exists(), "Expected property file doesn't exist!");
@@ -44,8 +44,8 @@ public class ActualJavaCodeTest {
     FileLocations locations =
         new TestProjectBuilder(projectDir)
             .propertyPath(location)
-            .addSourceFile("com.team2813", cls.getResource("/Simple.java"))
-            .mainClass("com.team2813.Simple")
+            .addSourceFile("io.github.cuttestkittensrule", cls.getResource("/Simple.java"))
+            .mainClass("io.github.cuttestkittensrule.Simple")
             .build();
 
     // Act
@@ -54,8 +54,8 @@ public class ActualJavaCodeTest {
     runner.withPluginClasspath();
     runner.withArguments("run", "--args", "/" + location);
     runner.withProjectDir(projectDir);
-    runner.build(); // assertions in Simple.java (resource); this will fail if Simple#main(String[])
-    // fails
+    // assertions in Simple.java (resource); this will fail if Simple#main(String[]) fails
+    runner.build();
 
     // Assert
     assertTrue(locations.expectedPropertyFile().exists(), "Expected property file doesn't exist!");
@@ -68,8 +68,9 @@ public class ActualJavaCodeTest {
     FileLocations locations =
         new TestProjectBuilder(projectDir)
             .gVersionCompatibility(true)
-            .addSourceFile("com.team2813", cls.getResource("/GVersionCompatibility.java"))
-            .mainClass("com.team2813.GVersionCompatibility")
+            .addSourceFile(
+                "io.github.cuttestkittensrule", cls.getResource("/GVersionCompatibility.java"))
+            .mainClass("io.github.cuttestkittensrule.GVersionCompatibility")
             .build();
 
     // Act
@@ -78,6 +79,8 @@ public class ActualJavaCodeTest {
     runner.withPluginClasspath();
     runner.withArguments("run");
     runner.withProjectDir(projectDir);
+    // assertions in GVersionCompatibility.java (resource); this will fail if
+    // GVersionCompatibility#main(String[]) fails
     runner.build();
 
     // Assert
@@ -93,8 +96,9 @@ public class ActualJavaCodeTest {
         new TestProjectBuilder(projectDir)
             .gVersionCompatibility(true)
             .propertyPath(location)
-            .addSourceFile("com.team2813", cls.getResource("/GVersionCompatibility.java"))
-            .mainClass("com.team2813.GVersionCompatibility")
+            .addSourceFile(
+                "io.github.cuttestkittensrule", cls.getResource("/GVersionCompatibility.java"))
+            .mainClass("io.github.cuttestkittensrule.GVersionCompatibility")
             .build();
 
     // Act
@@ -103,6 +107,8 @@ public class ActualJavaCodeTest {
     runner.withPluginClasspath();
     runner.withArguments("run", "--args", "/" + location);
     runner.withProjectDir(projectDir);
+    // assertions in GVersionCompatibility.java (resource); this will fail if
+    // GVersionCompatibility#main(String[]) fails
     runner.build();
 
     // Assert

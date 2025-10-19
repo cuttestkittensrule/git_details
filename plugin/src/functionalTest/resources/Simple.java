@@ -1,4 +1,4 @@
-package com.team2813;
+package io.github.cuttestkittensrule;
 
 import java.io.InputStream;
 import java.time.Instant;
