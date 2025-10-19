@@ -3,24 +3,23 @@
  */
 package io.github.cuttestkittensrule;
 
-import org.gradle.testfixtures.ProjectBuilder;
-import org.gradle.api.Project;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * A simple unit test for the 'com.team2813.gradle.git_version' plugin.
- */
-class GitDetailsPluginTest {
-    @Test
-    void pluginRegistersPropertyGenerationTask() {
-        // Create a test project and apply the plugin
-        Project project = ProjectBuilder.builder().build();
-        var container = project.getPlugins();
-        container.apply("java");
-        container.apply("io.github.cuttestkittensrule.git_details");
+import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
+import org.junit.jupiter.api.Test;
 
-        // Verify the result
-        assertNotNull(project.getTasks().findByName(GitDetailsPlugin.GEN_PROPERTY_TASK_NAME));
-    }
+/** A simple unit test for the 'com.team2813.gradle.git_version' plugin. */
+class GitDetailsPluginTest {
+  @Test
+  void pluginRegistersPropertyGenerationTask() {
+    // Create a test project and apply the plugin
+    Project project = ProjectBuilder.builder().build();
+    var container = project.getPlugins();
+    container.apply("java");
+    container.apply("io.github.cuttestkittensrule.git_details");
+
+    // Verify the result
+    assertNotNull(project.getTasks().findByName(GitDetailsPlugin.GEN_PROPERTY_TASK_NAME));
+  }
 }

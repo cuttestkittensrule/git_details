@@ -3,6 +3,8 @@
  */
 package io.github.cuttestkittensrule;
 
+import static io.github.cuttestkittensrule.GitDetailsJNI.generateGitProperties;
+
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -13,75 +15,87 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskAction;
 
-import static io.github.cuttestkittensrule.GitDetailsJNI.generateGitProperties;
-
-// TODO: Force load of java plugin before this plugin, or fail neatly if java plugin is not loaded (if possible)
+// TODO: Force load of java plugin before this plugin, or fail neatly if java plugin is not loaded
+// (if possible)
 public class GitDetailsPlugin implements Plugin<Project> {
-    private static final String EXTENSION_NAME = "git_details";
-    private static final String GEN_DIR = "generated/resources/" + EXTENSION_NAME;
-    private static final String DEFAULT_PROPERTIES_PATH = "git-info.properties";
-    static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
+  private static final String EXTENSION_NAME = "git_details";
+  private static final String GEN_DIR = "generated/resources/" + EXTENSION_NAME;
+  private static final String DEFAULT_PROPERTIES_PATH = "git-info.properties";
+  static final String GEN_PROPERTY_TASK_NAME = "createGitProperties";
 
-    public interface GitDetailsExtension {
-        Property<String> getResourceFilePath();
-        Property<Boolean> getGversionBackwardCompatibility();
-    }
+  public interface GitDetailsExtension {
+    Property<String> getResourceFilePath();
 
-    @Override
-    public void apply(Project project) {
-        // allow configuration w/defaults
-        var extension = project.getExtensions().create(EXTENSION_NAME, GitDetailsExtension.class);
-        extension.getResourceFilePath().convention(DEFAULT_PROPERTIES_PATH);
-        extension.getGversionBackwardCompatibility().convention(false);
+    Property<Boolean> getGversionBackwardCompatibility();
+  }
 
-        // create task to generate properties file
-        var taskProvider = project.getTasks().register(GEN_PROPERTY_TASK_NAME, GeneratePropertyFile.class);
-        taskProvider.configure(task -> {
-            task.getResourceFilePath().set(extension.getResourceFilePath());
-            task.getGversionBackwardCompatibility().set(extension.getGversionBackwardCompatibility());
+  @Override
+  public void apply(Project project) {
+    // allow configuration w/defaults
+    var extension = project.getExtensions().create(EXTENSION_NAME, GitDetailsExtension.class);
+    extension.getResourceFilePath().convention(DEFAULT_PROPERTIES_PATH);
+    extension.getGversionBackwardCompatibility().convention(false);
+
+    // create task to generate properties file
+    var taskProvider =
+        project.getTasks().register(GEN_PROPERTY_TASK_NAME, GeneratePropertyFile.class);
+    taskProvider.configure(
+        task -> {
+          task.getResourceFilePath().set(extension.getResourceFilePath());
+          task.getGversionBackwardCompatibility().set(extension.getGversionBackwardCompatibility());
         });
-        // which should be depended on by the java compilation task
-        project.getTasks().getByName(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).dependsOn(taskProvider);
+    // which should be depended on by the java compilation task
+    project.getTasks().getByName(JavaPlugin.PROCESS_RESOURCES_TASK_NAME).dependsOn(taskProvider);
 
-        // add generated source set to the main source set.
-        var sourceSets = project.getExtensions().getByType(JavaPluginExtension.class).getSourceSets();
-        var generatedSourceSets = project.getLayout().getBuildDirectory().dir(GEN_DIR);
-        sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources().srcDir(generatedSourceSets);
-    }
+    // add generated source set to the main source set.
+    var sourceSets = project.getExtensions().getByType(JavaPluginExtension.class).getSourceSets();
+    var generatedSourceSets = project.getLayout().getBuildDirectory().dir(GEN_DIR);
+    sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getResources().srcDir(generatedSourceSets);
+  }
 
-    static abstract class GeneratePropertyFile extends DefaultTask {
-        public GeneratePropertyFile() {}
+  abstract static class GeneratePropertyFile extends DefaultTask {
+    public GeneratePropertyFile() {}
 
-        @Input
-        abstract Property<String> getResourceFilePath();
-        @Input
-        abstract Property<Boolean> getGversionBackwardCompatibility();
+    @Input
+    abstract Property<String> getResourceFilePath();
 
-        @TaskAction
-        void createGitProperties() {
-            Project project = getProject();
-            String repoPath = project.getRootDir().getPath();
-            String resourceFilePath = getResourceFilePath().get();
-            String propertyFile = project.getLayout().getBuildDirectory().dir(GEN_DIR).get().file(resourceFilePath).getAsFile().getPath();
-            int options = 0;
-            if (getGversionBackwardCompatibility().get()) {
-                options |= 1;
-            }
-            int error = generateGitProperties(repoPath, propertyFile, options);
-            if (error != 0) {
-                switch (error) {
-                    case 0b0001_0001:
-                        throw new IllegalArgumentException("JNI code failed to get repository path");
-                    case 0b0001_0010:
-                        throw new RuntimeException("JNI code failed to get property file path");
-                    case 0b0010_0001:
-                        throw new RuntimeException("A fundamental assumption of git state was broken!");
-                    case 0b0010_0010:
-                        throw new RuntimeException("Failed to write properties file! See stderr for more info!");
-                    default:
-                        throw new AssertionError("Unknown error code was thrown!");
-                }
-            }
+    @Input
+    abstract Property<Boolean> getGversionBackwardCompatibility();
+
+    @TaskAction
+    void createGitProperties() {
+      Project project = getProject();
+      String repoPath = project.getRootDir().getPath();
+      String resourceFilePath = getResourceFilePath().get();
+      String propertyFile =
+          project
+              .getLayout()
+              .getBuildDirectory()
+              .dir(GEN_DIR)
+              .get()
+              .file(resourceFilePath)
+              .getAsFile()
+              .getPath();
+      int options = 0;
+      if (getGversionBackwardCompatibility().get()) {
+        options |= 1;
+      }
+      int error = generateGitProperties(repoPath, propertyFile, options);
+      if (error != 0) {
+        switch (error) {
+          case 0b0001_0001:
+            throw new IllegalArgumentException("JNI code failed to get repository path");
+          case 0b0001_0010:
+            throw new RuntimeException("JNI code failed to get property file path");
+          case 0b0010_0001:
+            throw new RuntimeException("A fundamental assumption of git state was broken!");
+          case 0b0010_0010:
+            throw new RuntimeException(
+                "Failed to write properties file! See stderr for more info!");
+          default:
+            throw new AssertionError("Unknown error code was thrown!");
         }
+      }
     }
+  }
 }
