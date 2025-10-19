@@ -10,8 +10,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'idea'
     id 'fr.stardustenterprises.rust.importer'
-    id 'maven-publish'
-    id 'com.gradle.plugin-publish' version '1.0.0-rc-1'
+    id 'com.gradle.plugin-publish' version '1.1.0'
 }
 
 group = "com.team2813.gradle"
