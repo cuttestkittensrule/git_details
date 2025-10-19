@@ -1,4 +1,4 @@
-package com.team2813.gradle;
+package io.github.cuttestkittensrule;
 
 import org.gradle.testkit.runner.GradleRunner;
 import org.junit.jupiter.api.Test;

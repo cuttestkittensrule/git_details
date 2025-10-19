@@ -1,4 +1,4 @@
-package com.team2813.gradle;
+package io.github.cuttestkittensrule;
 
 import java.io.File;
 

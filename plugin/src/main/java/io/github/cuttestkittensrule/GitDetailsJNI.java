@@ -1,4 +1,4 @@
-package com.team2813.gradle;
+package io.github.cuttestkittensrule;
 
 import fr.stardustenterprises.plat4k.EnumArchitecture;
 import fr.stardustenterprises.plat4k.EnumOperatingSystem;

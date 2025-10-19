@@ -13,7 +13,7 @@ plugins {
     id 'com.gradle.plugin-publish' version '1.1.0'
 }
 
-group = "com.team2813.gradle"
+group = "io.github.cuttestkittensrule"
 version = "1.0.0"
 
 // Download the source code for dependencies and the javadoc (in IntelliJ IDEA).
@@ -55,8 +55,8 @@ gradlePlugin {
     // Define the plugin
     plugins {
         create("gitDetails") {
-            id = 'com.team2813.gradle.git_details'
-            implementationClass = 'com.team2813.gradle.GitDetailsPlugin'
+            id = 'io.github.cuttestkittensrule.git_details'
+            implementationClass = 'io.github.cuttestkittensrule.GitDetailsPlugin'
             displayName = "Git Details"
             description = "A plugin for getting information about git with no prerequisite git installation"
         }

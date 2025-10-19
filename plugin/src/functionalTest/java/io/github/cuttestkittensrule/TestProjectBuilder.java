@@ -1,4 +1,4 @@
-package com.team2813.gradle;
+package io.github.cuttestkittensrule;
 
 import org.gradle.internal.impldep.org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.Assumptions;
@@ -16,8 +16,6 @@ import java.util.*;
 public class TestProjectBuilder {
     private String propertyPath;
     private Boolean gVersionCompatibility;
-    private Boolean generateBuildDate;
-    private Boolean useLatestDate;
     private String mainClass;
     private boolean createGitRepo = true;
     private final File projectDir;
@@ -83,7 +81,7 @@ public class TestProjectBuilder {
     private static final String pluginStr = """
             plugins {
               id('java')
-              id('com.team2813.gradle.git_details')
+              id('io.github.cuttestkittensrule.git_details')
             }
             
             """;
@@ -106,7 +104,7 @@ public class TestProjectBuilder {
         FileLocations locations = createFileLocations();
         writeString(locations.settingsFile(), "");
         StringBuilder buildString = new StringBuilder(pluginStr);
-        if (propertyPath != null || gVersionCompatibility != null || generateBuildDate != null || useLatestDate != null) {
+        if (propertyPath != null || gVersionCompatibility != null) {
             buildString.append("git_details {").append(System.lineSeparator());
             if (propertyPath != null) {
                 buildString.append(String.format("  resourceFilePath = \"%s\"%n", propertyPath));
