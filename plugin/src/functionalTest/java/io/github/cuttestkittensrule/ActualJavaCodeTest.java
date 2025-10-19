@@ -1,3 +1,4 @@
+/* Copyright 2025 Kyle C */
 package io.github.cuttestkittensrule;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

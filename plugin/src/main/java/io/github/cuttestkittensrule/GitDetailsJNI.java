@@ -1,3 +1,4 @@
+/* Copyright 2025 Kyle C */
 package io.github.cuttestkittensrule;
 
 import fr.stardustenterprises.plat4k.EnumArchitecture;
