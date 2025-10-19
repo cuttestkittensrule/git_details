@@ -8,14 +8,14 @@
 plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
     id 'java-gradle-plugin'
-    id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '1.2.1'
     id 'idea'
     id 'fr.stardustenterprises.rust.importer'
     id "com.github.johnrengelman.shadow" version "5.0.0"
 }
 
 group = "com.team2813.gradle"
-version = "0.1.0"
+version = "1.0.0"
 
 // Download the source code for dependencies and the javadoc (in IntelliJ IDEA).
 // Not required for running the robot, but helps with IntelliJ IDEA development.
@@ -52,12 +52,22 @@ tasks.shadowJar {
 }
 
 gradlePlugin {
+    vcsUrl = "https://github.com/cuttestkittensrule/git_details"
     // Define the plugin
     plugins {
         create("gitDetails") {
             id = 'com.team2813.gradle.git_details'
             implementationClass = 'com.team2813.gradle.GitDetailsPlugin'
+            displayName = "Git Details"
+            description = "A plugin for getting information about git with no prerequisite git installation"
+            tags.addAll('git', 'vcs')
         }
+    }
+}
+
+publishing {
+    repositories {
+        mavenLocal()
     }
 }
 
@@ -75,12 +85,6 @@ tasks.register('functionalTest', Test) {
     testClassesDirs = sourceSets.functionalTest.output.classesDirs
     classpath = sourceSets.functionalTest.runtimeClasspath
     useJUnitPlatform()
-}
-
-publishing {
-    repositories {
-        mavenLocal()
-    }
 }
 
 gradlePlugin.testSourceSets.add(sourceSets.functionalTest)
